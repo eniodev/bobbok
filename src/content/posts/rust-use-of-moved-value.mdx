@@ -1,0 +1,184 @@
+---
+title: "Fix: Use of Moved Value in Rust (E0382)"
+description: "Understanding Rust's ownership system and how to fix the 'use of moved value' error with practical examples using clone, references, and borrowing."
+date: 2026-06-23
+tags: ["rust", "ownership", "errors", "debug"]
+category: "systems"
+published: true
+---
+
+## The Error
+
+One of the first errors Rust beginners encounter:
+
+```
+error[E0382]: use of moved value: `s`
+ --> src/main.rs:5:20
+  |
+3 |     let s = String::from("hello");
+  |         - move occurs because `s` has type `String`, which does not implement the `Copy` trait
+4 |     takes_ownership(s);
+  |                     - value moved here
+5 |     println!("{}", s); // error!
+  |                    ^ value used here after move
+```
+
+This happens when you try to use a value after you've already moved it somewhere else.
+
+## Why It Happens
+
+Rust uses an **ownership model** where every value has a single owner. When you pass a value to a function (or assign it to another variable), ownership is **moved** — the original binding is invalidated and can no longer be used.
+
+```rust
+// Bad
+let s = String::from("hello");
+takes_ownership(s);   // s is moved into the function
+println!("{}", s);    // compile error: s no longer valid
+```
+
+Types like `i32`, `bool`, and `f64` implement the `Copy` trait, so they are copied instead of moved — this is why you can use them freely after passing them. `String`, `Vec`, and most heap-allocated types do **not** implement `Copy`, so they are moved.
+
+## Examples and Fixes
+
+### 1. Passing to a function
+
+```rust
+// Bad
+fn print_it(s: String) {
+    println!("{}", s);
+}
+
+let name = String::from("Alice");
+print_it(name);
+println!("{}", name); // error[E0382]
+```
+
+**Fix — borrow instead of moving:**
+
+```rust
+// Good — take a reference (&str or &String)
+fn print_it(s: &str) {
+    println!("{}", s);
+}
+
+let name = String::from("Alice");
+print_it(&name);      // lend name to the function
+println!("{}", name); // still valid here
+```
+
+**Fix — clone if you need an independent copy:**
+
+```rust
+let name = String::from("Alice");
+print_it(name.clone()); // pass a copy
+println!("{}", name);   // original is untouched
+```
+
+### 2. Assigning to another variable
+
+```rust
+// Bad
+let v1 = vec![1, 2, 3];
+let v2 = v1;           // ownership moves to v2
+println!("{:?}", v1);  // error[E0382]
+```
+
+```rust
+// Good — clone to get an independent copy
+let v1 = vec![1, 2, 3];
+let v2 = v1.clone();
+println!("{:?}", v1);  // works fine
+println!("{:?}", v2);
+```
+
+```rust
+// Good — borrow if you only need to read
+let v1 = vec![1, 2, 3];
+let v2 = &v1;          // v2 is a reference, not an owner
+println!("{:?}", v1);
+println!("{:?}", v2);
+```
+
+### 3. Using a value in a closure
+
+```rust
+// Bad
+let name = String::from("Alice");
+let greet = || println!("Hello, {}", name);
+let greet2 = || println!("Hi, {}", name); // error: name moved into greet
+```
+
+```rust
+// Good — clone before capturing
+let name = String::from("Alice");
+let name2 = name.clone();
+let greet  = || println!("Hello, {}", name);
+let greet2 = || println!("Hi, {}", name2);
+```
+
+```rust
+// Good — borrow in the closure (if the closure doesn't outlive the variable)
+let name = String::from("Alice");
+let greet  = || println!("Hello, {}", name);
+let greet2 = || println!("Hi, {}", name);   // both borrow, no move
+greet();
+greet2();
+```
+
+### 4. Moving out of a struct field
+
+```rust
+// Bad
+struct User {
+    name: String,
+}
+
+let user = User { name: String::from("Alice") };
+let name = user.name;       // moves name out of the struct
+println!("{}", user.name);  // error[E0382]
+```
+
+```rust
+// Good — borrow the field
+let name = &user.name;
+println!("{}", name);
+println!("{}", user.name); // both work
+```
+
+## Choosing the Right Fix
+
+| Situation | Fix |
+|---|---|
+| You only need to read the value | Pass a reference (`&T` or `&str`) |
+| You need an independent owned copy | Call `.clone()` |
+| The type is small and stack-allocated | Derive `Copy` on your type |
+| You want to transfer ownership intentionally | Accept the move — restructure the code |
+
+## Deriving `Copy` on Your Own Types
+
+If your struct only holds `Copy` types, you can derive `Copy` to avoid moves entirely:
+
+```rust
+#[derive(Copy, Clone)]
+struct Point {
+    x: f64,
+    y: f64,
+}
+
+let p1 = Point { x: 1.0, y: 2.0 };
+let p2 = p1;            // copied, not moved
+println!("{}", p1.x);   // still valid
+```
+
+You cannot derive `Copy` if any field is non-`Copy` (e.g., `String`, `Vec`).
+
+## Debugging Tips
+
+1. **Read the error output carefully** — the compiler shows you exactly where the move happened and where you tried to use the value again.
+2. **Ask: do I need ownership or just access?** — if you only need to read or temporarily use the value, a reference (`&T`) is almost always the right answer.
+3. **Avoid reflexive `.clone()`** — cloning works but copies heap data. Prefer references when possible; reach for `.clone()` only when you truly need an independent owned value.
+4. **Run `rustc --explain E0382`** — Rust's built-in error explanations are excellent and include additional examples.
+
+## Key Takeaway
+
+The error means you tried to use a value after its ownership was transferred elsewhere. Fix it by passing a reference (`&`) instead of moving, or by cloning the value when you need an independent copy. When in doubt, start with a reference — it's cheaper and the compiler will tell you if it's not enough.
