@@ -6,6 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   site: 'https://eniocarlospaulo.github.io',
   base: '/bobbok',
+  trailingSlash: 'always',
   integrations: [mdx()],
   vite: {
     plugins: [tailwindcss()],

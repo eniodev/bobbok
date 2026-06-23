@@ -18,7 +18,7 @@ const base = import.meta.env.BASE_URL;
 ---
 <BaseLayout title={`Tag: #${tag}`} description={`Posts tagged with #${tag}`}>
   <div class="mb-8 flex items-center gap-3">
-    <a href={`${base}tags`} class="text-sm text-dustblue hover:underline no-underline">← All tags</a>
+    <a href={`${base}tags/`} class="text-sm text-dustblue hover:underline no-underline">← All tags</a>
     <h1 class="text-3xl font-bold text-ink dark:text-dark-text">#{tag}</h1>
     <span class="text-ink/50 dark:text-dark-text/50 text-sm">{posts.length} post{posts.length !== 1 ? 's' : ''}</span>
   </div>

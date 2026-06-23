@@ -18,7 +18,7 @@ const base = import.meta.env.BASE_URL;
 ---
 <BaseLayout title={`Category: ${category}`} description={`Posts in the ${category} category`}>
   <div class="mb-8 flex items-center gap-3">
-    <a href={`${base}categories`} class="text-sm text-dustblue hover:underline no-underline">← All categories</a>
+    <a href={`${base}categories/`} class="text-sm text-dustblue hover:underline no-underline">← All categories</a>
     <h1 class="text-3xl font-bold text-ink dark:text-dark-text">{category}</h1>
     <span class="text-ink/50 dark:text-dark-text/50 text-sm">{posts.length} post{posts.length !== 1 ? 's' : ''}</span>
   </div>

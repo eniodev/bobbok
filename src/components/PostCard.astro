@@ -12,7 +12,7 @@ const formattedDate = post.data.date.toLocaleDateString('en-GB', {
 });
 ---
 <article class="rounded-xl border border-sage/40 dark:border-dark-border bg-cream-dk dark:bg-dark-surface p-6 transition-shadow hover:shadow-md">
-  <a href={`${base}posts/${post.id}`} class="no-underline group">
+  <a href={`${base}posts/${post.id}/`} class="no-underline group">
     <span class="inline-block text-xs font-medium uppercase tracking-wide text-dustblue dark:text-dustblue/80 mb-2 bg-mist dark:bg-mist/10 px-2.5 py-0.5 rounded-full">
       {post.data.category}
     </span>
