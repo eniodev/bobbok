@@ -1,0 +1,27 @@
+---
+---
+<button
+  id="theme-toggle"
+  aria-label="Toggle dark mode"
+  class="w-9 h-9 rounded-lg border border-sage/40 dark:border-dark-border flex items-center justify-center text-lg transition-colors hover:bg-cream-dk dark:hover:bg-dark-surface"
+>
+  <span class="dark:hidden">☀️</span>
+  <span class="hidden dark:inline">🌙</span>
+</button>
+
+<script is:inline>
+  (function () {
+    const root = document.documentElement;
+    const stored = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (stored === 'dark' || (!stored && prefersDark)) {
+      root.classList.add('dark');
+    }
+  })();
+
+  document.getElementById('theme-toggle').addEventListener('click', function () {
+    const root = document.documentElement;
+    root.classList.toggle('dark');
+    localStorage.setItem('theme', root.classList.contains('dark') ? 'dark' : 'light');
+  });
+</script>

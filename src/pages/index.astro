@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+
+const posts = (await getCollection('posts'))
+  .filter(p => p.data.published)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+<BaseLayout title="Home" description="A blog for documenting bug fixes and solutions.">
+  <section>
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-ink dark:text-dark-text mb-2">bobbok</h1>
+      <p class="text-ink/60 dark:text-dark-text/60">Bug fixes, solutions, and debugging notes.</p>
+    </div>
+
+    {posts.length === 0 ? (
+      <p class="text-ink/50 dark:text-dark-text/50">No posts yet — check back soon.</p>
+    ) : (
+      <ul class="grid gap-5 list-none p-0">
+        {posts.map(post => (
+          <li><PostCard post={post} /></li>
+        ))}
+      </ul>
+    )}
+  </section>
+</BaseLayout>

@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+const base = import.meta.env.BASE_URL;
+const isDev = import.meta.env.DEV;
+---
+<BaseLayout title="Search" description="Search all posts on bobbok.">
+  <h1 class="text-3xl font-bold text-ink dark:text-dark-text mb-8">Search</h1>
+
+  {isDev ? (
+    <div class="rounded-xl border border-blush bg-blush/20 dark:bg-blush/5 p-6 text-sm text-ink/70 dark:text-dark-text/70">
+      Search is powered by Pagefind and only works after a production build.
+      Run <code class="bg-cream-dk dark:bg-dark-surface px-1.5 py-0.5 rounded font-mono text-xs">npm run build</code> then
+      <code class="bg-cream-dk dark:bg-dark-surface px-1.5 py-0.5 rounded font-mono text-xs">npm run preview</code> to try it.
+    </div>
+  ) : (
+    <>
+      <link href={`${base}pagefind/pagefind-ui.css`} rel="stylesheet" />
+      <script src={`${base}pagefind/pagefind-ui.js`} is:inline></script>
+      <script is:inline define:vars={{ base }}>
+        window.addEventListener('DOMContentLoaded', function () {
+          new PagefindUI({
+            element: '#search-widget',
+            showImages: false,
+            baseUrl: base,
+          });
+        });
+      </script>
+    </>
+  )}
+
+  <div id="search-widget" class="mt-4"></div>
+</BaseLayout>

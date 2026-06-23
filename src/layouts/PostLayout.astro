@@ -1,0 +1,47 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import TagList from '../components/TagList.astro';
+import Prose from '../components/Prose.astro';
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+}
+const { post } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const formattedDate = post.data.date.toLocaleDateString('en-GB', {
+  day: 'numeric', month: 'long', year: 'numeric',
+});
+---
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <article data-pagefind-body>
+    <header class="mb-8">
+      <a
+        href={`${base}categories/${post.data.category}`}
+        class="inline-block text-xs font-medium uppercase tracking-wide text-dustblue bg-mist dark:bg-mist/10 px-3 py-1 rounded-full no-underline hover:opacity-80 mb-4"
+      >
+        {post.data.category}
+      </a>
+      <h1 data-pagefind-meta="title" class="text-3xl font-bold text-ink dark:text-dark-text mb-3">
+        {post.data.title}
+      </h1>
+      <p class="text-ink/60 dark:text-dark-text/60 text-lg mb-4">{post.data.description}</p>
+      <div class="flex items-center gap-4 flex-wrap">
+        <time datetime={post.data.date.toISOString()} class="text-sm text-ink/50 dark:text-dark-text/50">
+          {formattedDate}
+        </time>
+        <TagList tags={post.data.tags} size="sm" />
+      </div>
+    </header>
+
+    <hr class="border-sage/40 dark:border-dark-border mb-8" />
+
+    <Prose>
+      <slot />
+    </Prose>
+
+    <nav class="mt-12 pt-6 border-t border-sage/30 dark:border-dark-border">
+      <a href={base} class="text-sm text-dustblue hover:underline no-underline">← Back to all posts</a>
+    </nav>
+  </article>
+</BaseLayout>

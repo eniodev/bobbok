@@ -1,0 +1,57 @@
+---
+title: "Fix: React useEffect Firing Twice in Strict Mode"
+description: "How to handle the double-invocation of useEffect in React 18 development mode without disabling Strict Mode."
+date: 2026-06-01
+tags: ["react", "hooks", "debug"]
+category: "frontend"
+published: true
+---
+
+## The Bug
+
+In React 18 development mode, `useEffect` runs **twice** on mount. This causes issues like duplicate API calls, double subscriptions, or unexpected side effects.
+
+```tsx
+useEffect(() => {
+  fetchUserData(userId); // called twice in dev!
+}, [userId]);
+```
+
+## Why It Happens
+
+React 18 Strict Mode intentionally mounts components twice in development to help you find effects that don't properly clean up. It's not a bug — it's React revealing that your effect isn't idempotent.
+
+## The Fix
+
+Return a cleanup function that cancels the in-flight work. Use `AbortController` for fetch calls:
+
+```tsx
+useEffect(() => {
+  const controller = new AbortController();
+
+  fetchUserData(userId, { signal: controller.signal })
+    .then(data => setUser(data))
+    .catch(err => {
+      if (err.name !== 'AbortError') setError(err);
+    });
+
+  return () => controller.abort();
+}, [userId]);
+```
+
+For subscriptions or event listeners:
+
+```tsx
+useEffect(() => {
+  const subscription = dataStream.subscribe(handler);
+  return () => subscription.unsubscribe();
+}, []);
+```
+
+## Key Takeaway
+
+The double-fire only happens in development with Strict Mode. In production React mounts effects once. The fix is always to write a proper cleanup — not to remove `<StrictMode>`.
+
+## Tags
+
+`react` · `hooks` · `debug`

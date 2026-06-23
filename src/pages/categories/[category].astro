@@ -1,0 +1,31 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', p => p.data.published);
+  const allCategories = [...new Set(posts.map(p => p.data.category))];
+  return allCategories.map(category => ({
+    params: { category },
+    props: { posts: posts.filter(p => p.data.category === category).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()) },
+  }));
+}
+
+const { category } = Astro.params;
+const { posts } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+<BaseLayout title={`Category: ${category}`} description={`Posts in the ${category} category`}>
+  <div class="mb-8 flex items-center gap-3">
+    <a href={`${base}categories`} class="text-sm text-dustblue hover:underline no-underline">← All categories</a>
+    <h1 class="text-3xl font-bold text-ink dark:text-dark-text">{category}</h1>
+    <span class="text-ink/50 dark:text-dark-text/50 text-sm">{posts.length} post{posts.length !== 1 ? 's' : ''}</span>
+  </div>
+
+  <ul class="grid gap-5 list-none p-0">
+    {posts.map(post => (
+      <li><PostCard post={post} /></li>
+    ))}
+  </ul>
+</BaseLayout>

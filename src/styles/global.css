@@ -1,0 +1,34 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Pastel light palette */
+  --color-cream: #FFFDD0;
+  --color-cream-dk: #F5F0C0;
+  --color-sage: #B7C4AE;
+  --color-dustblue: #A8C0D6;
+  --color-blush: #F2C4C4;
+  --color-lavender: #C5B8E8;
+  --color-mist: #D1E8E2;
+  --color-ink: #3D3D3D;
+
+  /* Dark mode palette */
+  --color-dark-bg: #1E1A2E;
+  --color-dark-surface: #2A2440;
+  --color-dark-border: #3D3558;
+  --color-dark-text: #E8E0F0;
+
+  /* Fonts */
+  --font-family-sans: 'Inter', system-ui, sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* Prevent flash of wrong theme */
+html {
+  background-color: var(--color-cream);
+}
+html.dark {
+  background-color: var(--color-dark-bg);
+}
