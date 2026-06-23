@@ -1,0 +1,122 @@
+---
+title: "Fix: Cannot Read Property of Undefined in JavaScript"
+description: "Understanding why 'Cannot read property of undefined' happens and how to fix it with practical examples and defensive patterns."
+date: 2026-06-23
+tags: ["javascript", "debug", "errors"]
+category: "frontend"
+published: true
+---
+
+## The Error
+
+One of the most common JavaScript runtime errors:
+
+```
+TypeError: Cannot read properties of undefined (reading 'foo')
+```
+
+Or in older environments:
+
+```
+TypeError: Cannot read property 'foo' of undefined
+```
+
+This happens when you try to access a property on a value that is `undefined`.
+
+## Why It Happens
+
+```js
+const user = undefined;
+console.log(user.name); // TypeError: Cannot read properties of undefined
+```
+
+The variable `user` is `undefined`, so accessing `.name` on it throws immediately. Common causes:
+
+- **Async timing** — reading data before it has loaded
+- **Missing API response field** — the server returned a shape you didn't expect
+- **Typos** — accessing the wrong variable or key name
+- **Destructuring a missing value** — destructuring a property that doesn't exist on the object
+
+## Examples and Fixes
+
+### 1. Async data not yet loaded
+
+```js
+// Bad
+const [user, setUser] = useState();
+
+return <p>{user.name}</p>; // crashes on first render
+```
+
+```js
+// Good — guard with optional chaining or a loading check
+const [user, setUser] = useState(null);
+
+if (!user) return <p>Loading...</p>;
+return <p>{user.name}</p>;
+```
+
+### 2. Nested property access
+
+```js
+const data = { profile: undefined };
+console.log(data.profile.bio); // TypeError
+```
+
+Use **optional chaining** (`?.`) to safely traverse the chain:
+
+```js
+console.log(data.profile?.bio); // undefined — no crash
+```
+
+### 3. Array element is undefined
+
+```js
+const items = [];
+console.log(items[0].id); // TypeError
+```
+
+```js
+// Guard before accessing
+if (items.length > 0) {
+  console.log(items[0].id);
+}
+
+// Or with optional chaining
+console.log(items[0]?.id);
+```
+
+### 4. Destructuring undefined
+
+```js
+function getUser() {
+  return undefined; // forgot the return value
+}
+
+const { name } = getUser(); // TypeError
+```
+
+```js
+// Provide a fallback default
+const { name } = getUser() ?? {};
+```
+
+## Defensive Patterns
+
+| Pattern | When to use |
+|---|---|
+| `value?.prop` | Nested access where any level may be undefined |
+| `value ?? fallback` | Provide a default when value is null or undefined |
+| Early return / guard clause | Component or function that depends on data being loaded |
+| TypeScript | Catch these at compile time instead of at runtime |
+
+## Debugging Tips
+
+1. **Read the stack trace** — the line number tells you exactly which property access failed.
+2. **Log the value before accessing** — `console.log(user)` right before `user.name` quickly reveals if it's `undefined`.
+3. **Check your API response shape** — use the Network tab in DevTools to confirm the data structure.
+4. **Use TypeScript** — the compiler will flag `object is possibly 'undefined'` before you even run the code.
+
+## Key Takeaway
+
+The error means you tried to read a property from `undefined`. Fix it by ensuring the value exists before you access it — either with optional chaining (`?.`), a null coalescing fallback (`??`), or an explicit guard.
